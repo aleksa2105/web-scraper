@@ -9,6 +9,7 @@ find_package(TBB REQUIRED)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/url/Url.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
