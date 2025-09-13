@@ -19,7 +19,6 @@ std::vector<std::string> Url::loadFromFile() {
             urls.push_back(url);
     }
 
-    file.close();
     return urls;
 }
 
