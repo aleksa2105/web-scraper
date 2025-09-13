@@ -1,41 +1,65 @@
-# Prerequisites
-*.d
+# ----------------------------
+# General C++ build artifacts
+# ----------------------------
 
-# Compiled Object files
-*.slo
-*.lo
+# Object files
 *.o
 *.obj
+*.lo
+*.slo
 
-# Precompiled Headers
+# Precompiled headers
 *.gch
 *.pch
 
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
+# Libraries
+*.a
+*.lib
+*.la
+*.lai
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
 
-# debug information files
+# Debug files
+*.pdb
 *.dwo
+*.dSYM/
+*.idb
+*.ipdb
+
+# ----------------------------
+# Build system directories
+# ----------------------------
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+Debug/
+Release/
+
+# ----------------------------
+# Zed editor
+# ----------------------------
+.zed/
+
+# ----------------------------
+# Temporary files
+# ----------------------------
+*.log
+*.tmp
+*.swp
+*~
+
+# ----------------------------
+# TBB specific
+# ----------------------------
+# TBB usually installed system-wide or via package manager, so binaries are usually ignored
+*.tbb
+*.tbbmalloc
