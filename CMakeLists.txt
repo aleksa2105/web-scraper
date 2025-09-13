@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(TBB REQUIRED)
 
 add_executable(${PROJECT_NAME}
-    main.cpp
+    src/main.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
