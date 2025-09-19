@@ -65,7 +65,7 @@ Url Url::makeAbsoluteUrl(const std::string& relativeUrl, const Url& baseUrl) {
             std::string protocol = baseUrl.m_url.substr(0, protocolEnd);
             return Url(protocol + ":" + relativeUrl);
         }
-        return Url("http:" + relativeUrl); // fallback
+        return Url("https:" + relativeUrl); // fallback
     }
 
     // No valid baseUrl -> return as-is
