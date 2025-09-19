@@ -13,7 +13,6 @@ add_executable(${PROJECT_NAME}
     src/url/Url.cpp
 )
 
-# Bolje je spojiti u jednu liniju ili dodati PRIVATE
 target_link_libraries(${PROJECT_NAME} 
     PRIVATE 
     TBB::tbb
