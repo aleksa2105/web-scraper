@@ -20,6 +20,7 @@
 *.so
 *.dylib
 *.dll
+*.exp
 
 # Executables
 *.exe
@@ -45,9 +46,24 @@ Debug/
 Release/
 
 # ----------------------------
-# Zed editor
+# IDE / Editor specific
 # ----------------------------
+
+# Zed editor
 .zed/
+
+# VS Code
+.vscode/
+
+# Visual Studio
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# CLion / JetBrains
+.idea/
 
 # ----------------------------
 # Temporary files
@@ -56,10 +72,38 @@ Release/
 *.tmp
 *.swp
 *~
+*.bak
 
 # ----------------------------
 # TBB specific
 # ----------------------------
-# TBB usually installed system-wide or via package manager, so binaries are usually ignored
 *.tbb
 *.tbbmalloc
+*.tbbmalloc_proxy
+
+# ----------------------------
+# cURL / libcurl build artifacts
+# ----------------------------
+*.exp
+*.lib
+*.dll
+*.so
+*.a
+.libs/
+
+# ----------------------------
+# OS specific
+# ----------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
