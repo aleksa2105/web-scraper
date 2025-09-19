@@ -81,13 +81,13 @@ Url PageDiscovery::extractNextPageUrl(const std::string& htmlContent, const Url&
     std::smatch match;
 
     // Define regex patterns to locate "next" button
-    std::regex pattern1(R"DELIM(<li\s+class="next">\s*<a\s+href="([^"]+)")DELIM", std::regex::icase);
-    std::regex pattern2(R"DELIM(class="next"[^>]*>\s*<a[^>]+href="([^"]+)")DELIM", std::regex::icase);
+    static const std::regex pattern1(R"DELIM(<li\s+class="next">\s*<a\s+href="([^"]+)")DELIM", std::regex::icase);
+    static const std::regex pattern2(R"DELIM(class="next"[^>]*>\s*<a[^>]+href="([^"]+)")DELIM", std::regex::icase);
 
-    std::vector<std::regex> patterns = { pattern1, pattern2 };
+    const std::vector<const std::regex*> patterns = { &pattern1, &pattern2 };
 
-    for (const auto& pattern : patterns) {
-        if (std::regex_search(htmlContent, match, pattern)) {
+    for (const auto* pattern : patterns) {
+        if (std::regex_search(htmlContent, match, *pattern)) {
             std::string relativeUrl = match[1].str();
             // Convert relative URL to absolute using the current page as base
             return currentUrl.makeAbsolute(relativeUrl);
