@@ -6,10 +6,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(TBB REQUIRED)
+find_package(CURL REQUIRED)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
     src/url/Url.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
+# Bolje je spojiti u jednu liniju ili dodati PRIVATE
+target_link_libraries(${PROJECT_NAME} 
+    PRIVATE 
+    TBB::tbb
+    CURL::libcurl
+)
