@@ -13,11 +13,11 @@ public:
 
     Book(const std::string& title,
         double price, StockStatus stockStatus, const ProductRating& rating,
-        const std::string& description, const std::string& upc, ProductType type,
+        const std::string& description, const std::string& upc,
         double tax, int stockQuantity, int numReviews,
         const Url& imageUrl, const Url& productUrl)
         : Product(title, price, stockStatus, rating, description,
-            upc, type, tax, stockQuantity, numReviews,
+            upc, ProductType::book, tax, stockQuantity, numReviews,
             imageUrl, productUrl) {
     }
 
