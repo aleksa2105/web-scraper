@@ -16,11 +16,11 @@ std::string stockStatusStr(StockStatus status) {
 
 std::string productRatingStr(ProductRating rating) {
     switch (rating) {
-    case ProductRating::one_star: return "⋆";
-    case ProductRating::two_star: return "⋆⋆";
-    case ProductRating::three_star: return "⋆⋆⋆";
-    case ProductRating::four_star: return "⋆⋆⋆⋆";
-    case ProductRating::five_star: return "⋆⋆⋆⋆⋆";
+    case ProductRating::one_star: return "⭐";
+    case ProductRating::two_star: return "⭐⭐";
+    case ProductRating::three_star: return "⭐⭐⭐";
+    case ProductRating::four_star: return "⭐⭐⭐⭐";
+    case ProductRating::five_star: return "⭐⭐⭐⭐⭐";
     default: return "unknown";
     }
 }
