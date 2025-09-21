@@ -8,6 +8,7 @@
 #include <tbb/concurrent_vector.h>
 #include <tbb/blocked_range.h>
 #include <tbb/task_arena.h>
+#include <mutex>
 
 PageFetcher::PageFetcher(const FetchConfig& config)
     : m_config(config), m_lastRequestTime(std::chrono::steady_clock::now()) {
@@ -28,6 +29,9 @@ size_t PageFetcher::WriteCallback(void* contents, size_t size, size_t nmemb, std
 }
 
 void PageFetcher::applyRateLimit() {
+    static std::mutex rateMutex; // Ensure thread safety for m_lastRequestTime
+    std::unique_lock<std::mutex> lock(rateMutex);
+
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastRequestTime);
 
