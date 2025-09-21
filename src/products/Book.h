@@ -23,6 +23,7 @@ public:
 
     // Utility Methods
     std::string str() const override;
+    bool isValid() const { return !m_title.empty() && m_price > 0.0; }
 };
 
 using BookList = std::vector<Book>;
