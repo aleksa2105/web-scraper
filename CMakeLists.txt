@@ -10,12 +10,13 @@ find_package(CURL REQUIRED)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
-    src/url/Url.cpp
-    src/products/Book.cpp
-    src/products/Product.cpp
+    src/analyzer/BookAnalyzer.cpp
     src/discovery/PageDiscovery.cpp
     src/fetcher/PageFetcher.cpp
+    src/products/Book.cpp
+    src/products/Product.cpp
     src/scraper/BookScraper.cpp
+    src/url/Url.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} 
