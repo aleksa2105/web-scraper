@@ -38,3 +38,9 @@ private:
     Url extractNextPageUrl(const std::string& htmlContent, const Url& currentUrl);
 
 };
+
+Url enterStartingUrl();
+
+void saveCatalogUrlsToFile(const UrlList& urls);
+
+UrlList readCatalogUrlsFromFile(const std::string& filename = "catalog_urls.txt");

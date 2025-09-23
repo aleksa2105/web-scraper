@@ -17,55 +17,6 @@ const std::regex BookScraper::s_imagePattern(R"DELIM(<div class="item active">\s
 const std::regex BookScraper::s_taxPattern(R"(<th>Tax</th>\s*<td>£([0-9]+\.[0-9]{2})</td>)");
 const std::regex BookScraper::s_reviewsPattern(R"((\d+)\s+review)");
 
-BookList BookScraper::scrapeAllBooks(const PageContentList& pages) {
-    if (pages.empty()) {
-        std::cout << "No pages to scrape" << std::endl;
-        return {};
-    }
-
-    std::cout << "Scraping " << pages.size() << " pages into Book objects..." << std::endl;
-
-    tbb::concurrent_vector<Book> scrapedBooks;
-
-    // Parallel scraping of all pages
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, pages.size()),
-        [&](const tbb::blocked_range<size_t>& range) {
-            for (size_t i = range.begin(); i != range.end(); ++i) {
-                const auto& page = pages[i];
-
-                if (page.success && isValidBookPage(page.html)) {
-                    try {
-                        Book book = scrapeBookFromHtml(page.html, page.url);
-                        if (book.isValid()) {
-                            scrapedBooks.push_back(std::move(book));
-                        }
-                    }
-                    catch (const std::exception& e) {
-                        std::cerr << "Error scraping book from " << page.url
-                            << ": " << e.what() << std::endl;
-                    }
-                }
-
-                // Progress indicator
-                if ((i + 1) % 50 == 0 || i + 1 == pages.size()) {
-                    std::cout << "Scraping progress: " << (i + 1) << "/" << pages.size()
-                        << " pages processed" << std::endl;
-                }
-            }
-        }
-    );
-
-    // Convert to regular vector
-    BookList finalBooks;
-    finalBooks.reserve(scrapedBooks.size());
-    for (const auto& book : scrapedBooks) {
-        finalBooks.push_back(book);
-    }
-
-    std::cout << "Scraping completed: " << finalBooks.size() << " valid books extracted" << std::endl;
-    return finalBooks;
-}
 
 Book BookScraper::scrapeBookFromHtml(const std::string& html, const Url& bookUrl) {
     // Extract book informations
@@ -88,7 +39,6 @@ Book BookScraper::scrapeBookFromHtml(const std::string& html, const Url& bookUrl
 
     return book;
 }
-
 
 std::string BookScraper::extractTitle(const std::string& html) {
     std::smatch match;

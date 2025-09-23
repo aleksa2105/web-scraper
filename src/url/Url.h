@@ -4,13 +4,8 @@
 #include <iostream>
 
 class Url {
-private:
-
-    std::string m_url;
-
 public:
 
-    // Constructors
     Url() = default;
     Url(const std::string& url) : m_url(url) {}
 
@@ -37,6 +32,16 @@ public:
     bool operator!=(const Url& other) const { return m_url != other.m_url; }
     friend std::ostream& operator<<(std::ostream& os, const Url& url);
 
+private:
+
+    std::string m_url;
+
 };
 
 using UrlList = std::vector<Url>;
+
+struct UrlHash {
+    size_t operator()(const Url& url) const noexcept {
+        return std::hash<std::string>{}(url.str());
+    }
+};

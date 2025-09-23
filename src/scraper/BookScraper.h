@@ -12,14 +12,6 @@ class BookScraper {
 public:
 
     /**
-     * Scrapes all books from a list of fetched pages.
-     *
-     * @param pages List of PageContent objects containing catalog or book pages
-     * @return List of all extracted Book objects
-     */
-    static BookList scrapeAllBooks(const PageContentList& pages);
-
-    /**
      * Scrapes a single book from its HTML content.
      *
      * @param html HTML content of the book page
@@ -66,6 +58,8 @@ private:
 
     static bool isValidBookPage(const std::string& html);
 
+private:
+
     // Regex patterns for books.toscrape.com
     static const std::regex s_titlePattern;
     static const std::regex s_pricePattern;
@@ -76,4 +70,5 @@ private:
     static const std::regex s_imagePattern;
     static const std::regex s_taxPattern;
     static const std::regex s_reviewsPattern;
+
 };

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <regex>
+#include <fstream>
 
 UrlList PageDiscovery::discoverAllPages(const Url& startUrl) {
     UrlList catalogPages;
@@ -95,4 +96,47 @@ Url PageDiscovery::extractNextPageUrl(const std::string& htmlContent, const Url&
     }
 
     return Url(); // No next page found
+}
+
+Url enterStartingUrl() {
+    std::string startUrl;
+
+    std::cout << "Enter the starting URL: ";
+    std::cin >> startUrl;
+
+    return Url{ startUrl };
+}
+
+void saveCatalogUrlsToFile(const UrlList& urls) {
+    std::ofstream out("catalog_urls.txt");
+    if (!out) {
+        std::cerr << "Failed to open file for writing.\n";
+    }
+    else {
+        for (const auto& url : urls) {
+            out << url.str() << "\n";
+        }
+        out.close();
+        std::cout << "Saved " << urls.size() << " URLs to catalog_urls.txt\n";
+    }
+}
+
+UrlList readCatalogUrlsFromFile(const std::string& filename) {
+    UrlList urls;
+    std::ifstream in(filename);
+
+    if (!in) {
+        std::cerr << "Failed to open file: " << filename << "\n";
+        return urls;
+    }
+
+    std::string line;
+    while (std::getline(in, line)) {
+        if (!line.empty()) {
+            urls.emplace_back(line);
+        }
+    }
+
+    in.close();
+    return urls;
 }

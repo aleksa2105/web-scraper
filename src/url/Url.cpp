@@ -83,7 +83,6 @@ Url Url::makeAbsoluteUrl(const std::string& relativeUrl, const Url& baseUrl) {
     }
 }
 
-
 std::ostream& operator<<(std::ostream& out, const Url& url) {
     return out << url.m_url;
 }

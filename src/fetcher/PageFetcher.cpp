@@ -100,59 +100,7 @@ PageContent PageFetcher::fetchPage(const Url& url) {
     return fetchWithRetry(url);
 }
 
-PageContentList PageFetcher::fetchPages(const UrlList& urls) {
-    if (urls.empty()) {
-        std::cout << "No URLs to fetch" << std::endl;
-        return {};
-    }
-
-    std::cout << "Fetching " << urls.size() << " pages with max "
-        << m_config.maxConcurrency << " concurrent connections..." << std::endl;
-
-    tbb::concurrent_vector<PageContent> results;
-
-    // Limit concurrency using task_arena
-    tbb::task_arena arena(m_config.maxConcurrency);
-    arena.execute([&] {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, urls.size()),
-            [&](const tbb::blocked_range<size_t>& range) {
-                for (size_t i = range.begin(); i != range.end(); ++i) {
-                    PageContent content = fetchWithRetry(urls[i]);
-                    results.push_back(std::move(content));
-
-                    // Progress indicator every 10 pages
-                    if ((i + 1) % 10 == 0 || i + 1 == urls.size()) {
-                        std::cout << "Progress: " << (i + 1) << "/" << urls.size()
-                            << " pages fetched" << std::endl;
-                    }
-                }
-            }
-        );
-        });
-
-    // Convert concurrent_vector to regular vector
-    PageContentList finalResults;
-    finalResults.reserve(results.size());
-    for (const auto& content : results) {
-        finalResults.push_back(content);
-    }
-
-    // Print statistics
-    size_t successCount = 0;
-    for (const auto& content : finalResults) {
-        if (content.success) successCount++;
-    }
-
-    std::cout << "Fetch completed: " << successCount << "/" << finalResults.size()
-        << " pages successful ("
-        << (finalResults.size() > 0 ? (successCount * 100 / finalResults.size()) : 0)
-        << "%)" << std::endl;
-
-    return finalResults;
-}
-
-UrlList PageFetcher::extractBookUrlsFromPage(const std::string& html, const Url& catalogUrl) {
+void PageFetcher::extractBookUrlsFromPage(tbb::concurrent_queue<Url>& bookQueue, const std::string& html, const Url& catalogUrl) {
     UrlList bookUrls;
 
     // Pattern for books.toscrape.com - links to books
@@ -165,78 +113,8 @@ UrlList PageFetcher::extractBookUrlsFromPage(const std::string& html, const Url&
         std::string relativeUrl = (*iter)[1].str();
         Url absoluteUrl = catalogUrl.makeAbsolute(relativeUrl);
         if (!absoluteUrl.empty()) {
-            bookUrls.push_back(absoluteUrl);
+            std::cout << "STAGE 3 - Extract book: " << absoluteUrl << std::endl;
+            bookQueue.push(absoluteUrl);
         }
     }
-
-    return bookUrls;
-}
-
-UrlList PageFetcher::extractBookUrls(const PageContentList& catalogPages) {
-    std::cout << "Extracting book URLs from " << catalogPages.size()
-        << " catalog pages..." << std::endl;
-
-    tbb::concurrent_vector<Url> allBookUrls;
-
-    // Parallel extraction from catalog pages
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, catalogPages.size()),
-        [&](const tbb::blocked_range<size_t>& range) {
-            for (size_t i = range.begin(); i != range.end(); ++i) {
-                const auto& page = catalogPages[i];
-                if (page.success) {
-                    auto bookUrls = extractBookUrlsFromPage(page.html, page.url);
-                    for (const auto& bookUrl : bookUrls) {
-                        allBookUrls.push_back(bookUrl);
-                    }
-                }
-            }
-        }
-    );
-
-    // Convert to regular vector and remove duplicates
-    UrlList finalUrls;
-    finalUrls.reserve(allBookUrls.size());
-
-    for (const auto& url : allBookUrls) {
-        // Simple duplicate check
-        if (std::find(finalUrls.begin(), finalUrls.end(), url.str()) == finalUrls.end()) {
-            finalUrls.push_back(url);
-        }
-    }
-
-    std::cout << "Extracted " << finalUrls.size() << " unique book URLs" << std::endl;
-    return finalUrls;
-}
-
-PageContentList PageFetcher::fetchAllBookPages(const UrlList& catalogUrls) {
-    if (catalogUrls.empty()) {
-        std::cerr << "No catalog URLs provided!" << std::endl;
-        return {};
-    }
-
-    std::cout << "\n=== PHASE 1: Fetching catalog pages ===" << std::endl;
-
-    // Step 1: Fetch catalog pages
-    PageContentList catalogPages = fetchPages(catalogUrls);
-
-    if (catalogPages.empty()) {
-        std::cerr << "No catalog pages fetched!" << std::endl;
-        return {};
-    }
-
-    std::cout << "\n=== PHASE 2: Extracting book URLs ===" << std::endl;
-
-    // Step 2: Extract book URLs from catalogs
-    UrlList bookUrls = extractBookUrls(catalogPages);
-
-    if (bookUrls.empty()) {
-        std::cerr << "No book URLs found in catalog pages!" << std::endl;
-        return {};
-    }
-
-    std::cout << "\n=== PHASE 3: Fetching book pages ===" << std::endl;
-
-    // Step 3: Fetch all book pages in parallel
-    return fetchPages(bookUrls);
 }
