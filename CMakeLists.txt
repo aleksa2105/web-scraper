@@ -14,7 +14,6 @@ add_executable(${PROJECT_NAME}
     src/discovery/PageDiscovery.cpp
     src/fetcher/PageFetcher.cpp
     src/products/Book.cpp
-    src/products/Product.cpp
     src/scraper/BookScraper.cpp
     src/url/Url.cpp
 )

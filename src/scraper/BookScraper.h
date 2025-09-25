@@ -34,15 +34,9 @@ private:
 
     static int extractStockQuantity(const std::string& html);
 
-    static std::string extractDescription(const std::string& html);
-
-    static std::string extractUpc(const std::string& html);
-
     static double extractTax(const std::string& html);
 
     static int extractNumReviews(const std::string& html);
-
-    static Url extractImageUrl(const std::string& html, const Url& baseUrl);
 
     // Utility methods
 
@@ -65,9 +59,6 @@ private:
     static const std::regex s_pricePattern;
     static const std::regex s_ratingPattern;
     static const std::regex s_stockPattern;
-    static const std::regex s_descriptionPattern;
-    static const std::regex s_upcPattern;
-    static const std::regex s_imagePattern;
     static const std::regex s_taxPattern;
     static const std::regex s_reviewsPattern;
 
