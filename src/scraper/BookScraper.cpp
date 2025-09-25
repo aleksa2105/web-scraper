@@ -2,40 +2,38 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include <tbb/parallel_for.h>
-#include <tbb/concurrent_vector.h>
-#include <tbb/blocked_range.h>
+#include <tbb/parallel_invoke.h>
 
 // Static regex patterns for books.toscrape.com
 const std::regex BookScraper::s_titlePattern(R"(<h1>([^<]+)</h1>)");
 const std::regex BookScraper::s_pricePattern(R"(£([0-9]+\.[0-9]{2}))");
 const std::regex BookScraper::s_ratingPattern(R"(star-rating\s+(\w+))");
 const std::regex BookScraper::s_stockPattern(R"(In stock \((\d+) available\)|Out of stock)");
-const std::regex BookScraper::s_descriptionPattern(R"(<div id="product_description"[^>]*>\s*<p>([^<]+)</p>)");
-const std::regex BookScraper::s_upcPattern(R"(<th>UPC</th>\s*<td>([^<]+)</td>)");
-const std::regex BookScraper::s_imagePattern(R"DELIM(<div class="item active">\s*<img src="([^"]+)")DELIM");
 const std::regex BookScraper::s_taxPattern(R"(<th>Tax</th>\s*<td>£([0-9]+\.[0-9]{2})</td>)");
 const std::regex BookScraper::s_reviewsPattern(R"((\d+)\s+review)");
 
 
 Book BookScraper::scrapeBookFromHtml(const std::string& html, const Url& bookUrl) {
-    // Extract book informations
-    const std::string title = extractTitle(html);
-    const double      price = extractPrice(html);
-    const StockStatus stockStatus = extractStockStatus(html);
-    const ProductRating rating = extractRating(html);
-    const std::string description = extractDescription(html);
-    const std::string upc = extractUpc(html);
-    const double      tax = extractTax(html);
-    const int         stockQuantity = extractStockQuantity(html);
-    const int         numReviews = extractNumReviews(html);
-    const Url         imageUrl = extractImageUrl(html, bookUrl);
+    std::string title;
+    double price{ 0.0 };
+    StockStatus stockStatus{ StockStatus::unknown };
+    ProductRating rating{ ProductRating::unknown };
+    double tax{ 0.0 };
+    int stockQuantity{ 0 };
+    int numReviews{ 0 };
+
+    tbb::parallel_invoke(
+        [&] { title = extractTitle(html); },
+        [&] { price = extractPrice(html); },
+        [&] { stockStatus = extractStockStatus(html); },
+        [&] { rating = extractRating(html); },
+        [&] { tax = extractTax(html); },
+        [&] { stockQuantity = extractStockQuantity(html); },
+        [&] { numReviews = extractNumReviews(html); }
+    );
 
     Book book(title, price, stockStatus,
-        rating, description, upc,
-        tax, stockQuantity, numReviews,
-        imageUrl, bookUrl
-    );
+        rating, tax, stockQuantity, numReviews, bookUrl);
 
     return book;
 }
@@ -84,22 +82,6 @@ int BookScraper::extractStockQuantity(const std::string& html) {
     return 0;
 }
 
-std::string BookScraper::extractDescription(const std::string& html) {
-    std::smatch match;
-    if (std::regex_search(html, match, s_descriptionPattern)) {
-        return cleanText(match[1].str());
-    }
-    return "";
-}
-
-std::string BookScraper::extractUpc(const std::string& html) {
-    std::smatch match;
-    if (std::regex_search(html, match, s_upcPattern)) {
-        return cleanText(match[1].str());
-    }
-    return "";
-}
-
 double BookScraper::extractTax(const std::string& html) {
     std::smatch match;
     if (std::regex_search(html, match, s_taxPattern)) {
@@ -121,29 +103,28 @@ int BookScraper::extractNumReviews(const std::string& html) {
     return 0; // Default 0 if no reviews
 }
 
-Url BookScraper::extractImageUrl(const std::string& html, const Url& baseUrl) {
-    std::smatch match;
-    if (std::regex_search(html, match, s_imagePattern)) {
-        std::string relativeUrl = match[1].str();
-        return baseUrl.makeAbsolute(relativeUrl);
-    }
-    return Url();
-}
-
 std::string BookScraper::cleanText(const std::string& text) {
-    std::string cleaned = text;
+    std::string cleaned;
+    cleaned.reserve(text.size());
 
-    // Remove leading/trailing whitespace
-    cleaned.erase(cleaned.begin(), std::find_if(cleaned.begin(), cleaned.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-        }));
-    cleaned.erase(std::find_if(cleaned.rbegin(), cleaned.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-        }).base(), cleaned.end());
+    bool inSpace = false;
 
-    // Replace multiple spaces with single space
-    std::regex multiSpace(R"(\s+)");
-    cleaned = std::regex_replace(cleaned, multiSpace, " ");
+    auto begin = std::find_if_not(text.begin(), text.end(), ::isspace);
+    auto end = std::find_if_not(text.rbegin(), text.rend(), ::isspace).base();
+
+    for (auto it = begin; it != end; ++it) {
+        unsigned char ch = static_cast<unsigned char>(*it);
+        if (std::isspace(ch)) {
+            if (!inSpace) {
+                cleaned.push_back(' ');
+                inSpace = true;
+            }
+        }
+        else {
+            cleaned.push_back(ch);
+            inSpace = false;
+        }
+    }
 
     return cleaned;
 }
